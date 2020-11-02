@@ -163,10 +163,15 @@ const OpenCC = {
 				/* class list 包含 ignore-opencc 的元素會跳過後續的轉換 */
 				if (currentNode.nodeType === Node.ELEMENT_NODE && currentNode.classList.contains('ignore-opencc')) return;
 
-				if (currentNode.lang === fromLangTag) {
+				/* fromLangTag 為 undefined 時無條件轉換 */
+				if (fromLangTag === undefined || currentNode.lang === fromLangTag) {
 					langMatched = true;
-					currentNode.shouldChangeLang = true;  // 記住 lang 屬性被修改了，以便恢復
-					currentNode.lang = toLangTag;
+
+					/* toLangTag 為 undefined 時不替換 lang 屬性 */
+					if (toLangTag !== undefined && currentNode.lang && currentNode.lang.length) {
+						currentNode.originalLang = currentNode.lang;  // 儲存原始的 lang 屬性，以便恢復
+						currentNode.lang = toLangTag;
+					}
 				} else if (currentNode.lang && currentNode.lang.length) {
 					langMatched = false;
 				}
@@ -219,8 +224,8 @@ const OpenCC = {
 				/* class list 包含 ignore-opencc 的元素會跳過後續的轉換 */
 				if (currentNode.nodeType === Node.ELEMENT_NODE && currentNode.classList.contains('ignore-opencc')) return;
 
-				if (currentNode.shouldChangeLang) {
-					currentNode.lang = fromLangTag;
+				if (currentNode.originalLang !== undefined) {
+					currentNode.lang = originalLang;
 				}
 
 				if (currentNode.originalString !== undefined) {
